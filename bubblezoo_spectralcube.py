@@ -44,22 +44,29 @@ def make_cutouts(color_dict,
                  target_band='f770w',
                  cutout_sizes=[1]*u.arcmin,
                  grid_overlap=0.5,
-                 save_kwargs={'dpi': 300,
-                              'origin': 'lower',
-                              'format': 'png'},
+                 img_format='png',
+                 min_dpi=300,
+                 save_kwargs={'origin': 'lower'},
                 ):
 
-    img_format = save_kwargs['format']
-    save_kwargs.pop('format')
+    # Save the headers in a subdirectory of outpout_path
+    output_hdr_path = output_path / "headers"
+    output_hdr_path.mkdir(parents=True, exist_ok=True)
+
+    if 'format' in save_kwargs:
+        img_format = save_kwargs['format']
+        save_kwargs.pop('format')
 
     # Want the image size to be ~approx uniform.
     # Scale DPI up based on the largest cutout size.
 
+    if 'dpi' in save_kwargs:
+        min_dpi = save_kwargs['dpi']
+        save_kwargs.pop('dpi')
+
     max_size = max(cutout_sizes)
-    min_dpi = save_kwargs['dpi']
     cutout_dpis = [min_dpi * (max_size / size) for size in cutout_sizes]
-    print(cutout_dpis)
-    save_kwargs.pop('dpi')
+    # print(cutout_dpis)
 
     # Reproject to a common grid.
     reproj_dict = {}
@@ -133,7 +140,7 @@ def make_cutouts(color_dict,
                 # Save txt versions of the headers for each cutout. Along with the png file saved per-pixel,
                 # we can reproduce the pixel to sky conversions.
                 hdr_cutout = reproj_dict[target_band][slicer].header
-                hdr_filename = output_path / f"{gal_name}_{size_str}_{iter:04}.header.txt"
+                hdr_filename = output_hdr_path / f"{gal_name}_{size_str}_{iter:04}.header.txt"
 
                 hdr_cutout.totextfile(str(hdr_filename), overwrite=True)
 
@@ -193,8 +200,12 @@ if __name__ == "__main__":
     if not output_path.exists():
         output_path.mkdir(parents=True)
 
+    print(f"Running on galaxies: {galaxy_names}")
+    print(f"Output to: {output_path}")
 
     for galaxy_name in galaxy_names:
+
+        print(f"Working on {galaxy_name}")
 
         add_proj_to_dict(data_path, galaxy_name, color_dict)
 

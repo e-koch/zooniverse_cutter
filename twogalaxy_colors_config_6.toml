@@ -1,0 +1,52 @@
+
+data_path = "/Users/ekoch/storage/PHANGS/bubblezoo/images_for_zooniverse"
+output_path = "/Users/ekoch/storage/PHANGS/bubblezoo/color_test_for_zooniverse_6"
+
+bands = [
+    'f770w',  # jwst
+    'hst_bband',  # hst
+]
+
+targets = [
+    'ic5332',
+    'ngc1365',
+]
+
+
+# There should be a parameters key for each band
+
+[parameters.f770w]
+
+file_search_str = '_f770w_i2d_align.fits'
+hdu_ext = 1
+
+# 'orange'
+color = '#FF8000'
+
+[parameters.f770w.greyRGBize_kwargs]
+rescalefn = 'asinh'
+min_max = [1.0, 99.5]
+scaletype = 'perc'
+
+[parameters.f770w.colorize_image_kwargs]
+colorintype = 'hex'
+gammacorr_color = 2.2
+
+
+[parameters.hst_bband]
+
+file_search_str = 'wfc*_f4*w*exp-drc-sci.fits'  # F438W or F475W or F435W
+hdu_ext = 0
+
+# cyan
+color = '#00FFFF'
+
+
+[parameters.hst_bband.greyRGBize_kwargs]
+rescalefn = 'linear'
+min_max = [1.0, 99.5]
+scaletype = 'perc'
+
+[parameters.hst_bband.colorize_image_kwargs]
+colorintype = 'hex'
+gammacorr_color = 2.2
