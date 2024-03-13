@@ -1,0 +1,68 @@
+
+data_path = "/Users/ekoch/storage/PHANGS/bubblezoo/images_for_zooniverse"
+output_path = "/Users/ekoch/storage/PHANGS/bubblezoo/output_for_zooniverse"
+
+bands = [
+    'f770w',  # jwst
+    'hst_bband',  # hst
+]
+
+targets = [
+    'ngc7496',
+    'ic5332',
+    'ngc0628',
+    'ngc1087',
+    'ngc1300',
+    'ngc1365',
+    'ngc1385',
+    'ngc1433',
+    'ngc1512',
+    'ngc1566',
+    'ngc1672',
+    'ngc2835',
+    'ngc3351',
+    'ngc3627',
+    'ngc4254',
+    'ngc4303',
+    'ngc4321',
+    'ngc4535',
+    'ngc5068',
+]
+
+# There should be a parameters key for each band
+
+[parameters.f770w]
+
+file_search_str = '_f770w_i2d_align.fits'
+hdu_ext = 1
+
+# 'red'
+color = '#FF0000'
+
+[parameters.f770w.greyRGBize_kwargs]
+rescalefn = 'asinh'
+min_max = [0.1,10]
+scaletype = 'abs'
+
+[parameters.f770w.colorize_image_kwargs]
+colorintype = 'hex'
+gammacorr_color = 2.2
+
+
+[parameters.hst_bband]
+
+file_search_str = 'wfc*_f4*w*exp-drc-sci.fits'  # F438W or F475W or F435W
+hdu_ext = 0
+
+# blue
+color = '#0000FF'
+
+
+[parameters.hst_bband.greyRGBize_kwargs]
+rescalefn = 'linear'
+min_max = [0.005,0.06]
+scaletype = 'abs'
+
+[parameters.hst_bband.colorize_image_kwargs]
+colorintype = 'hex'
+gammacorr_color = 2.2

@@ -1070,7 +1070,7 @@ def greyRGBize_image(datin,rescalefn='linear',scaletype='abs',min_max=[None,None
 
     return dat_greyRGB
 
-def colorize_image(image, colorvals, colorintype='hsv', dtype=np.float, gammacorr_color=1):
+def colorize_image(image, colorvals, colorintype='hsv', dtype=float, gammacorr_color=1):
     """
     ### Add color of the given hue to an RGB greyscale image.
 
