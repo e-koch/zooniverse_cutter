@@ -8,6 +8,7 @@ bands = [
 ]
 
 targets = [
+    'ngc0628',
     'ic5332',
     'ngc1365',
 ]
@@ -18,6 +19,8 @@ targets = [
 
 file_search_str = '_f770w_i2d_align.fits'
 hdu_ext = 1
+hdu_ext_mask = 2
+
 
 # 'blue'
 color = '#0080FF'
@@ -36,6 +39,7 @@ gammacorr_color = 2.2
 
 file_search_str = 'wfc*_f4*w*exp-drc-sci.fits'  # F438W or F475W or F435W
 hdu_ext = 0
+hdu_ext_mask = 0
 
 # yellow
 color = '#FFFF00'
@@ -45,6 +49,8 @@ color = '#FFFF00'
 rescalefn = 'linear'
 min_max = [1.0, 99.5]
 scaletype = 'perc'
+# vmin = -6e-3  # Enable setting a absolute min
+vmin = 1e-4  # Enable setting a absolute min
 
 [parameters.hst_bband.colorize_image_kwargs]
 colorintype = 'hex'

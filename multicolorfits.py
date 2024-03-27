@@ -1046,10 +1046,13 @@ def greyRGBize_image(datin,rescalefn='linear',
     if 'per' in scaletype.lower():
         if min_max==[None,None]:
             min_max=[0., 100.]
-        try:
-            minval, maxval = np.percentile(np.ma.masked_invalid(datin).compressed(), min_max)
-        except IndexError:
-            minval, maxval = np.percentile(np.ma.masked_invalid(np.zeros_like(datin)).compressed(), min_max)
+
+        minval, maxval = np.nanpercentile(datin, min_max)
+
+        # try:
+        #     minval, maxval = np.percentile(np.ma.masked_invalid(datin).compressed(), min_max)
+        # except IndexError:
+        #     minval, maxval = np.percentile(np.ma.masked_invalid(np.zeros_like(datin)).compressed(), min_max)
     else:
         minval=[np.nanmin(datin) if min_max[0] is None else min_max[0]][0]
         maxval=[np.nanmax(datin) if min_max[1] is None else min_max[1]][0]
@@ -1155,7 +1158,7 @@ def combine_multicolor(im_list_colorized,gamma=2.2,inverse=False):
     array
         Colorized RGB image (combined), shape=[ypixels,xpixels,3]
     """
-    combined_RGB=LinearStretch()(np.nansum(im_list_colorized,axis=0))
+    combined_RGB=LinearStretch()(np.nansum(im_list_colorized, axis=0))
 
     RGB_maxints = np.nanmax(combined_RGB, axis=(0,1))
 

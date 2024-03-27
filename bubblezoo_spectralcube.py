@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
+import scipy.ndimage as nd
 
 from astropy.io import fits
 from astropy import units as u
@@ -59,7 +60,7 @@ def make_cutouts(color_dict,
                  target_min_finite_frac=0.5,
                  img_format='png',
                  min_dpi=300,
-                 save_kwargs={'origin': 'lower', 'interpolation': 'nearest'},
+                 save_kwargs={'origin': 'lower'},#, 'interpolation': 'nearest'},
                  save_bw_cutouts=True,
                 ):
 
@@ -79,7 +80,8 @@ def make_cutouts(color_dict,
         save_kwargs.pop('dpi')
 
     max_size = max(cutout_sizes)
-    cutout_dpis = [min_dpi * (max_size / size) for size in cutout_sizes]
+    # cutout_dpis = [min_dpi * (max_size / size) for size in cutout_sizes]
+    zoom_ratios = [np.round(max_size / size, 2).value for size in cutout_sizes]
     # print(cutout_dpis)
 
     # Reproject to a common grid.
@@ -96,7 +98,7 @@ def make_cutouts(color_dict,
 
 
     # Make the cutouts, save to png files with 4 different rotations, and a txt file of the header for each cutout
-    for cutout_size, cutout_dpi in zip(cutout_sizes, cutout_dpis):
+    for cutout_size, zoom_ratio in zip(cutout_sizes, zoom_ratios):
 
         # Make the pixel grid.
 
@@ -129,15 +131,15 @@ def make_cutouts(color_dict,
                                 x_ind + cutout_pixel_size // 2))
 
                 # Check that the cutout has finite values above the specified min.
-                finite_frac = np.isfinite(reproj_dict[target_band]).sum() / float(reproj_dict[target_band].size)
+                finite_frac = np.isfinite(reproj_dict[target_band][slicer]).sum() / float(reproj_dict[target_band][slicer].size)
                 if finite_frac < target_min_finite_frac:
                     continue
 
-                grey_images = {this_band: mcf.greyRGBize_image(reproj_dict[this_band][slicer].value,
+                grey_images = {this_band: mcf.greyRGBize_image(nd.zoom(reproj_dict[this_band][slicer].value, zoom_ratio, order=0),
                                                                **color_dict[this_band]['greyRGBize_kwargs'])
                                for this_band in color_dict.keys()}
 
-                colored_images = {this_band: mcf.colorize_image(grey_images[this_band],
+                colored_images = {this_band: mcf.colorize_image(np.nan_to_num(grey_images[this_band]),
                                                                 color_dict[this_band]['color'],
                                                                 **color_dict[this_band]['colorize_image_kwargs'])
                                   for this_band in color_dict.keys()}
@@ -149,25 +151,26 @@ def make_cutouts(color_dict,
                 # rotation angle = this_angel * 90 deg for np.rotate90
                 for this_angle in range(0, 4):
 
-                    filename = output_path / f"{gal_name}_{size_str}_{iter:04}_rot{(this_angle * 90):.0f}.{img_format}"
+                    filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_{iter:04}_rot{(this_angle * 90):.0f}.{img_format}"
 
                     plt.imsave(filename, np.rot90(combined_RGB, k=this_angle),
-                               dpi=cutout_dpi,
                                **save_kwargs)
+                            #    dpi=cutout_dpi,
 
                 # Optionalely save the cutouts of the grey scales images per band:
                 if save_bw_cutouts:
                     for this_band in grey_images:
 
-                        this_bw_image= grey_images[this_band]
+                        # Also apply the gamma scaling factor used for the combined images.
+                        this_bw_image= grey_images[this_band]**(1/2.2)
 
                         for this_angle in range(0, 4):
 
-                            filename = output_path / f"{gal_name}_{size_str}_{iter:04}_rot{(this_angle * 90):.0f}_{this_band}.{img_format}"
+                            filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_{iter:04}_rot{(this_angle * 90):.0f}_{this_band}.{img_format}"
 
                             plt.imsave(filename, np.rot90(this_bw_image, k=this_angle),
-                                    dpi=cutout_dpi,
-                                    **save_kwargs)
+                                       **save_kwargs)
+                                    # dpi=cutout_dpi,
 
 
                 # Save txt versions of the headers for each cutout. Along with the png file saved per-pixel,
@@ -197,8 +200,6 @@ def load_toml(path, job_id=None):
     for this_band in data['bands']:
         assert this_band in data['parameters']
         color_dicts[this_band]= data['parameters'][this_band]
-
-    # bands = data['bands']
 
     if job_id is not None:
         try:
@@ -246,5 +247,6 @@ if __name__ == "__main__":
         make_cutouts(color_dict, output_path,
                      gal_name=galaxy_name,
                      target_min_finite_frac=0.5,
-                     cutout_sizes=[0.25, 0.5, 1]*u.arcmin,)
+                     cutout_sizes=[0.5, 1]*u.arcmin,
+                     save_bw_cutouts=True)
 
