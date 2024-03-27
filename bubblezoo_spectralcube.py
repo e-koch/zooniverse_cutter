@@ -37,6 +37,18 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
         else:
             color_dict[this_band]['data'] = Projection.from_hdu(fits.open(all_matches[0])[this_band_hduext])
 
+            # Just keep the numpy array for the mask
+            this_data = fits.open(all_matches[0])[this_band_hduext].data
+            this_mask = np.logical_and(np.isfinite(this_data), this_data != 0)
+
+            # But assert the shape is at least the same
+            if np.shape(color_dict[this_band]['data']) != np.shape(this_data):
+                raise ValueError(f"Specified mask extension does not have a matching shape to the data: {all_matches[0]}")
+
+            color_dict[this_band]['mask'] = this_mask
+
+            # Apply the mask to the data
+            color_dict[this_band]['data'][~this_mask] = np.NaN
 
 def make_cutouts(color_dict,
                  output_path,
@@ -44,6 +56,7 @@ def make_cutouts(color_dict,
                  target_band='f770w',
                  cutout_sizes=[1]*u.arcmin,
                  grid_overlap=0.5,
+                 target_min_finite_frac=0.5,
                  img_format='png',
                  min_dpi=300,
                  save_kwargs={'origin': 'lower', 'interpolation': 'nearest'},
@@ -113,6 +126,11 @@ def make_cutouts(color_dict,
                                 y_ind + cutout_pixel_size // 2),
                           slice(x_ind - cutout_pixel_size // 2,
                                 x_ind + cutout_pixel_size // 2))
+
+                # Check that the cutout has finite values above the specified min.
+                finite_frac = np.isfinite(reproj_dict[target_band]).sum() / float(reproj_dict[target_band].size)
+                if finite_frac < target_min_finite_frac:
+                    continue
 
                 grey_images = {this_band: mcf.greyRGBize_image(reproj_dict[this_band][slicer].value,
                                                                **color_dict[this_band]['greyRGBize_kwargs'])
