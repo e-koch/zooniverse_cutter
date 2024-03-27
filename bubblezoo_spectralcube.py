@@ -60,6 +60,7 @@ def make_cutouts(color_dict,
                  img_format='png',
                  min_dpi=300,
                  save_kwargs={'origin': 'lower', 'interpolation': 'nearest'},
+                 save_bw_cutouts=True,
                 ):
 
     # Save the headers in a subdirectory of outpout_path
@@ -154,12 +155,28 @@ def make_cutouts(color_dict,
                                dpi=cutout_dpi,
                                **save_kwargs)
 
+                # Optionalely save the cutouts of the grey scales images per band:
+                if save_bw_cutouts:
+                    for this_band in grey_images:
+
+                        this_bw_image= grey_images[this_band]
+
+                        for this_angle in range(0, 4):
+
+                            filename = output_path / f"{gal_name}_{size_str}_{iter:04}_rot{(this_angle * 90):.0f}_{this_band}.{img_format}"
+
+                            plt.imsave(filename, np.rot90(this_bw_image, k=this_angle),
+                                    dpi=cutout_dpi,
+                                    **save_kwargs)
+
+
                 # Save txt versions of the headers for each cutout. Along with the png file saved per-pixel,
                 # we can reproduce the pixel to sky conversions.
                 hdr_cutout = reproj_dict[target_band][slicer].header
                 hdr_filename = output_hdr_path / f"{gal_name}_{size_str}_{iter:04}.header.txt"
 
                 hdr_cutout.totextfile(str(hdr_filename), overwrite=True)
+
 
                 iter += 1
 
@@ -228,5 +245,6 @@ if __name__ == "__main__":
 
         make_cutouts(color_dict, output_path,
                      gal_name=galaxy_name,
+                     target_min_finite_frac=0.5,
                      cutout_sizes=[0.25, 0.5, 1]*u.arcmin,)
 
