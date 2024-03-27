@@ -1009,7 +1009,12 @@ except:
         c_hex=mplc.rgb2hex(mplc.colorConverter.to_rgb(c)) #could use to_rgba to keep alpha
         return c_hex
 
-def greyRGBize_image(datin,rescalefn='linear',scaletype='abs',min_max=[None,None],gamma=2.2,checkscale=False):
+def greyRGBize_image(datin,rescalefn='linear',
+                     scaletype='abs',
+                     min_max=[None,None],
+                     vmin=None, vmax=None,
+                     gamma=2.2,
+                     checkscale=False):
     """
     ### Takes an image and returns 3-frame [R,G,B] (vals from 0...1)
 
@@ -1023,6 +1028,10 @@ def greyRGBize_image(datin,rescalefn='linear',scaletype='abs',min_max=[None,None
         'abs' for absolute values, 'perc' for percentiles
     min_max : list
         [min,max] vals to use in rescale.  if scaletype='perc', list the percentiles to use, e.g. [1.,95.]
+    vmin : float
+        Overrides other scaling options to set an absolute minimum value
+    vmax : float
+        Overrides other scaling options to set an absolute maximum value
     gamma : float
         Value for gamma correction.  For combining colorized frames, use default gamma=2.2.  For inverse, use gamma=(1./2.2)
     checkscale : bool
@@ -1044,6 +1053,13 @@ def greyRGBize_image(datin,rescalefn='linear',scaletype='abs',min_max=[None,None
     else:
         minval=[np.nanmin(datin) if min_max[0] is None else min_max[0]][0]
         maxval=[np.nanmax(datin) if min_max[1] is None else min_max[1]][0]
+
+    # Check for overrides if vmin/vmax are set.
+    if vmin is not None:
+        minval = vmin
+    if vmax is not None:
+        maxval = vmax
+
     #Used specified rescaling function
     datscaled=(scaling_fns[rescalefn]() + ManualInterval(vmin=minval,vmax=maxval))(datin)
     #datscaled=rescalefn(datin,vmin=minval,vmax=maxval)

@@ -46,7 +46,7 @@ def make_cutouts(color_dict,
                  grid_overlap=0.5,
                  img_format='png',
                  min_dpi=300,
-                 save_kwargs={'origin': 'lower'},
+                 save_kwargs={'origin': 'lower', 'interpolation': 'nearest'},
                 ):
 
     # Save the headers in a subdirectory of outpout_path
@@ -70,7 +70,6 @@ def make_cutouts(color_dict,
 
     # Reproject to a common grid.
     reproj_dict = {}
-    colors_dict = {}
 
     # Reproject to the target header
     target_header = color_dict[target_band]['data'].header
