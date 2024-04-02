@@ -1013,7 +1013,7 @@ def greyRGBize_image(datin,rescalefn='linear',
                      scaletype='abs',
                      min_max=[None,None],
                      vmin=None, vmax=None,
-                     min_vmax=None,
+                     min_vmax=None, max_vmin=None,
                      gamma=2.2,
                      checkscale=False):
     """
@@ -1035,6 +1035,8 @@ def greyRGBize_image(datin,rescalefn='linear',
         Overrides other scaling options to set an absolute maximum value
     min_vmax : float
         Overrides percentile vmax when it is lower than this value. This is to handle scaling in noisy regions.
+    max_vmin : float
+        Overrides percentile vmin when it is greater than this value. This is to handle scaling in noisy regions.
     gamma : float
         Value for gamma correction.  For combining colorized frames, use default gamma=2.2.  For inverse, use gamma=(1./2.2)
     checkscale : bool
@@ -1057,6 +1059,11 @@ def greyRGBize_image(datin,rescalefn='linear',
             if maxval < min_vmax:
                 # print("Using min_vmax!")
                 maxval = min_vmax
+
+        if max_vmin is not None:
+            if minval > max_vmin:
+                # print("Using max_vmin!")
+                minval = max_vmin
 
         # try:
         #     minval, maxval = np.percentile(np.ma.masked_invalid(datin).compressed(), min_max)
