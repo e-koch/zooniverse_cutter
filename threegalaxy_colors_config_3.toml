@@ -30,6 +30,10 @@ color = '#0080FF'
 rescalefn = 'asinh'
 min_max = [1.0, 99.5]
 scaletype = 'perc'
+vmin = 1e-1  # Enable setting a absolute min
+min_vmax = 0.5  # Enable setting a minimum vmax. Enabled when the 99.5% is too low.
+
+# Visually this looks good for the Cycle 1 data (~2 sigma at the field centers)
 
 [parameters.f770w.colorize_image_kwargs]
 colorintype = 'hex'
@@ -54,6 +58,7 @@ min_max = [1.0, 99.5]
 scaletype = 'perc'
 # vmin = -6e-3  # Enable setting a absolute min
 vmin = 1e-4  # Enable setting a absolute min
+min_vmax = 1e-2  # Enable setting a minimum vmax. Enabled when the 99.5% is too low.
 
 [parameters.hst_bband.colorize_image_kwargs]
 colorintype = 'hex'
