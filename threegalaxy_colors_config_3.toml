@@ -8,9 +8,9 @@ bands = [
 ]
 
 targets = [
-    'ngc0628',
     'ic5332',
-    'ngc1365',
+    # 'ngc0628',
+    # 'ngc1365',
 ]
 
 # There should be a parameters key for each band
@@ -20,6 +20,7 @@ targets = [
 file_search_str = '_f770w_i2d_align.fits'
 hdu_ext = 1
 hdu_ext_mask = 2
+edge_clip = false  # Binary erosion along the edges
 
 
 # 'blue'
@@ -40,6 +41,8 @@ gammacorr_color = 2.2
 file_search_str = 'wfc*_f4*w*exp-drc-sci.fits'  # F438W or F475W or F435W
 hdu_ext = 0
 hdu_ext_mask = 0
+edge_clip = true  # Binary erosion along the edges
+edge_clip_size = 60  # Number of binary erosion iterations
 
 # yellow
 color = '#FFFF00'

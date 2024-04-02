@@ -29,6 +29,15 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
 
         this_band_hduext = color_dict[this_band]['hdu_ext']
 
+        if 'edge_clip' in color_dict[this_band].keys():
+            edge_clip = color_dict[this_band]['edge_clip']
+        else:
+            edge_clip = False
+
+        if edge_clip:
+            edge_clip_size = color_dict[this_band]['edge_clip_size']
+
+
         # Does it exist?
         all_matches = list(this_galaxy_path.glob(f"*{color_dict[this_band]['file_search_str']}*"))
         if len(all_matches) == 0:
@@ -45,6 +54,10 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
             # But assert the shape is at least the same
             if np.shape(color_dict[this_band]['data']) != np.shape(this_data):
                 raise ValueError(f"Specified mask extension does not have a matching shape to the data: {all_matches[0]}")
+
+            # Optioanlly clip the edges of the image. Helps visually clean-up edges of the HST bands.
+            if edge_clip:
+                this_mask = nd.binary_erosion(this_mask, iterations=edge_clip_size)
 
             color_dict[this_band]['mask'] = this_mask
 
