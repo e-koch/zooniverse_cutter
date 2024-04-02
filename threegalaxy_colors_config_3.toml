@@ -9,8 +9,8 @@ bands = [
 
 targets = [
     'ic5332',
-    # 'ngc0628',
-    # 'ngc1365',
+    'ngc0628',
+    'ngc1365',
 ]
 
 # There should be a parameters key for each band
@@ -47,6 +47,7 @@ hdu_ext = 0
 hdu_ext_mask = 0
 edge_clip = true  # Binary erosion along the edges
 edge_clip_size = 60  # Number of binary erosion iterations
+edge_clip_match = 'wfc3'  # instrument check. Only clip edges for wfc3
 
 # yellow
 color = '#FFFF00'

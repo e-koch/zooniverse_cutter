@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import scipy.ndimage as nd
+import skimage.morphology as mo
 
 from astropy.io import fits
 from astropy import units as u
@@ -37,6 +38,12 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
         if edge_clip:
             edge_clip_size = color_dict[this_band]['edge_clip_size']
 
+            if 'edge_clip_match' in color_dict[this_band].keys():
+                edge_clip_match = color_dict[this_band]['edge_clip_match']
+            else:
+                edge_clip_match = ""
+                this_instrument = ""
+
 
         # Does it exist?
         all_matches = list(this_galaxy_path.glob(f"*{color_dict[this_band]['file_search_str']}*"))
@@ -46,6 +53,14 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
             raise ValueError(f"Found multiple files for {this_galaxy_path}")
         else:
             color_dict[this_band]['data'] = Projection.from_hdu(fits.open(all_matches[0])[this_band_hduext])
+
+            if edge_clip:
+                if len(edge_clip_match) > 0:
+                    # currently intended just for HST bands. May fail for other bands/instruments
+                    this_instrument = color_dict[this_band]['data'].header['INSTRUME'].lower()
+                    if edge_clip_match not in this_instrument:
+                        print("No matching edge clipping for this instrument")
+                        edge_clip = False
 
             # Just keep the numpy array for the mask
             this_data = fits.open(all_matches[0])[this_band_hduext].data
@@ -57,6 +72,15 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
 
             # Optioanlly clip the edges of the image. Helps visually clean-up edges of the HST bands.
             if edge_clip:
+                print("Clipping edges")
+                # Remove small holes
+                min_area = int(float(this_mask.size) * 0.02)
+                this_mask = mo.remove_small_holes(this_mask, area_threshold=min_area)
+
+                # Close gaps between chips (e.g. for ACS)
+                this_mask = nd.binary_closing(this_mask, np.ones((5, 5), dtype=bool),
+                                              iterations=edge_clip_size)
+
                 this_mask = nd.binary_erosion(this_mask, iterations=edge_clip_size)
 
             color_dict[this_band]['mask'] = this_mask
