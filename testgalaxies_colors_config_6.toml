@@ -1,6 +1,6 @@
 
 data_path = "/Users/ekoch/storage/PHANGS/bubblezoo/images_for_zooniverse"
-output_path = "/Users/ekoch/storage/PHANGS/bubblezoo/color_test_for_zooniverse_geminicancer"
+output_path = "/Users/ekoch/storage/PHANGS/bubblezoo/color_test_for_zooniverse_6"
 
 bands = [
     'f770w',  # jwst
@@ -10,6 +10,7 @@ bands = [
 targets = [
     'ic5332',
     'ngc1365',
+    'ngc0628'
 ]
 
 
@@ -19,14 +20,18 @@ targets = [
 
 file_search_str = '_f770w_i2d_align.fits'
 hdu_ext = 1
+hdu_ext_mask = 2
+edge_clip = false  # Binary erosion along the edges
 
-# 'yellow'
-color = '#FFFF00'
+# 'orange'
+color = '#FF8000'
 
 [parameters.f770w.greyRGBize_kwargs]
 rescalefn = 'asinh'
 min_max = [1.0, 99.5]
 scaletype = 'perc'
+vmin = 1e-1  # Enable setting a absolute min
+min_vmax = 0.5  # Enable setting a minimum vmax. Enabled when the 99.5% is too low.
 
 [parameters.f770w.colorize_image_kwargs]
 colorintype = 'hex'
@@ -37,15 +42,22 @@ gammacorr_color = 2.2
 
 file_search_str = 'wfc*_f4*w*exp-drc-sci.fits'  # F438W or F475W or F435W
 hdu_ext = 0
+hdu_ext_mask = 0
+edge_clip = true  # Binary erosion along the edges
+edge_clip_size = 60  # Number of binary erosion iterations
+edge_clip_match = 'wfc3'  # instrument check. Only clip edges for wfc3
 
-# blue
-color = '#0080FF'
+# cyan
+color = '#00FFFF'
 
 
 [parameters.hst_bband.greyRGBize_kwargs]
 rescalefn = 'linear'
 min_max = [1.0, 99.5]
 scaletype = 'perc'
+# vmin = -6e-3  # Enable setting a absolute min
+vmin = 1e-4  # Enable setting a absolute min
+min_vmax = 1e-2  # Enable setting a minimum vmax. Enabled when the 99.5% is too low.
 
 [parameters.hst_bband.colorize_image_kwargs]
 colorintype = 'hex'
