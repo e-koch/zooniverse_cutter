@@ -88,17 +88,37 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
             # Apply the mask to the data
             color_dict[this_band]['data'][~this_mask] = np.NaN
 
+
+def optimal_wcs_header(color_dict, **kwargs):
+
+    from reproject.mosaicking import find_optimal_celestial_wcs
+
+    list_of_wcs = [(color_dict[this_key]['data'].shape, color_dict[this_key]['data'].wcs)
+                   for this_key in color_dict]
+
+    opt_wcs, opt_shape = find_optimal_celestial_wcs(list_of_wcs, **kwargs)
+
+    new_header = opt_wcs.to_header()
+    new_header['NAXIS'] = 2
+    new_header['NAXIS2'] = opt_shape[1]
+    new_header['NAXIS1'] = opt_shape[0]
+
+    return new_header
+
+
 def make_cutouts(color_dict,
                  output_path,
+                 filename_tag="",
                  gal_name=None,
                  target_band='f770w',
                  cutout_sizes=[1]*u.arcmin,
                  grid_overlap=0.5,
                  target_min_finite_frac=0.5,
-                 img_format='png',
-                 min_dpi=300,
-                 save_kwargs={'origin': 'lower'},#, 'interpolation': 'nearest'},
+                 img_format='jpg',
+                 save_kwargs={'origin': 'lower',
+                              'pil_kwargs' : {'quality': 25}},
                  save_bw_cutouts=True,
+                 zoom_factor=1.0,
                 ):
 
     # Save the headers in a subdirectory of outpout_path
@@ -118,20 +138,29 @@ def make_cutouts(color_dict,
 
     max_size = max(cutout_sizes)
     # cutout_dpis = [min_dpi * (max_size / size) for size in cutout_sizes]
-    zoom_ratios = [np.round(max_size / size, 2).value for size in cutout_sizes]
+    zoom_ratios = [np.round(zoom_factor * max_size / size, 2).value for size in cutout_sizes]
     # print(cutout_dpis)
 
     # Reproject to a common grid.
     reproj_dict = {}
 
-    # Reproject to the target header
-    target_header = color_dict[target_band]['data'].header
+    # Reproject to the target grid
+    target_header = optimal_wcs_header(color_dict)
     for this_key in color_dict.keys():
-        if this_key == target_band:
-            reproj_dict[this_key] = color_dict[target_band]['data']
-            continue
-
         reproj_dict[this_key] = color_dict[this_key]['data'].reproject(target_header)
+
+    # Cut to matching FoV
+    # target_header = color_dict[target_band]['data'].header
+    # Define box cuts
+    data_ref = reproj_dict[target_band]
+    mask_slices = nd.find_objects(np.logical_and(np.isfinite(data_ref), data_ref != 0))[0]
+
+    for this_key in color_dict.keys():
+        # if this_key == target_band:
+        #     continue
+
+        # Cut to the same bounding box for the FoV
+        reproj_dict[this_key] = reproj_dict[this_key][mask_slices]
 
 
     # Make the cutouts, save to png files with 4 different rotations, and a txt file of the header for each cutout
@@ -172,7 +201,8 @@ def make_cutouts(color_dict,
                 if finite_frac < target_min_finite_frac:
                     continue
 
-                grey_images = {this_band: mcf.greyRGBize_image(nd.zoom(reproj_dict[this_band][slicer].value, zoom_ratio, order=0),
+                grey_images = {this_band: mcf.greyRGBize_image(nd.zoom(np.nan_to_num(reproj_dict[this_band][slicer].value),
+                                                                       zoom_ratio, order=3),
                                                                **color_dict[this_band]['greyRGBize_kwargs'])
                                for this_band in color_dict.keys()}
 
@@ -188,7 +218,7 @@ def make_cutouts(color_dict,
                 # rotation angle = this_angel * 90 deg for np.rotate90
                 for this_angle in range(0, 4):
 
-                    filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_{iter:04}_rot{(this_angle * 90):.0f}.{img_format}"
+                    filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_{iter:04}_rot{(this_angle * 90):.0f}_color{filename_tag}.{img_format}"
 
                     plt.imsave(filename, np.rot90(combined_RGB, k=this_angle),
                                **save_kwargs)
@@ -264,6 +294,8 @@ if __name__ == "__main__":
     # config_file = "colors_config.toml"
     config_file = Path(sys.argv[-2])
 
+    color_tag = config_file.name.split(".")[0].split("_")[-1]
+
     galaxy_names, data_path, output_path, color_dict = load_toml(config_file, job_id=job_id)
 
     data_path = Path(data_path)
@@ -282,6 +314,7 @@ if __name__ == "__main__":
         add_proj_to_dict(data_path, galaxy_name, color_dict)
 
         make_cutouts(color_dict, output_path,
+                     filename_tag=color_tag,
                      gal_name=galaxy_name,
                      target_min_finite_frac=0.5,
                      cutout_sizes=[0.5, 1]*u.arcmin,
