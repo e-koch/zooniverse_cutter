@@ -1,0 +1,20 @@
+name: bubblezoo
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - conda==23.5.2
+  - setuptools
+  - pip
+  - wheel
+  - conda-content-trust
+  - conda-libmamba-solver
+  - dask
+  - ipython
+  - numpy
+  - zarr
+  - astropy
+  - lmfit
+  - spectral-cube
+prefix: /home/erickoch/miniconda3

@@ -1,0 +1,33 @@
+# /bin/csh
+#
+#$ -cwd -j y
+#$ -o zooniverse_cutout_tests.$JOB_ID.$TASK_ID.log
+#$ -q sThC.q
+#$ -l mres=4G,h_data=4G,h_vmem=4G
+#$ -N zooniverse_cutout_tests
+#$ -t 1-3
+#$ -pe mthread 1
+#$ -m e
+#$ -M eric.koch@cfa.harvard.edu
+
+
+source $HOME/.tcshrc
+
+conda activate bubblezoo
+
+echo + `date` job $JOB_NAME started in $QUEUE with jobID=$JOB_ID taskID=$SGE_TASK_ID on $HOSTNAME
+#
+
+
+set my_python = $HOME/miniconda3/envs/bubblezoo/bin/python
+
+set CONFIG_FILE = $HOME/zooniverse_cutter/testgalaxies_colors_config_geminiccancer_maxent.toml
+
+# Right now it's easiest to run this from within the repo
+cd $HOME/zooniverse_cutter
+
+$my_python -u $HOME/zooniverse_cutter/bubblezoo_spectralcube.py $CONFIG_FILE $SGE_TASK_ID
+
+
+#
+echo $JOB_NAME $SGE_TASK_ID done `date`
