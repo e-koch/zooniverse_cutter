@@ -1,6 +1,10 @@
 
-data_path = "/Users/ekoch/storage/PHANGS/bubblezoo/images_for_zooniverse"
-output_path = "/Users/ekoch/storage/PHANGS/bubblezoo/color_test_for_zooniverse_geminicancer_maxent"
+# data_path = "/Users/ekoch/storage/PHANGS/bubblezoo/images_for_zooniverse"
+# output_path = "/Users/ekoch/storage/PHANGS/bubblezoo/color_test_for_zooniverse_geminicancer_maxent"
+
+# Hydra runs
+data_path = "/home/erickoch/scratch/phangs_bubblezoo/images_for_zooniverse"
+output_path = "/home/erickoch/scratch/phangs_bubblezoo/color_test_for_zooniverse_geminicancer_maxent"
 
 bands = [
     'f770w',  # jwst
