@@ -1026,7 +1026,7 @@ def greyRGBize_image(datin,rescalefn='linear',
     rescalefn : func
         Function to use for rescaling intensity.  imscale.linear/sqrt/squared/log/power/sinh/asinh
     scaletype : str
-        'abs' for absolute values, 'perc' for percentiles
+        'abs' for absolute values, 'perc' for percentiles, 'maxent' for max entropy
     min_max : list
         [min,max] vals to use in rescale.  if scaletype='perc', list the percentiles to use, e.g. [1.,95.]
     vmin : float
@@ -1052,7 +1052,10 @@ def greyRGBize_image(datin,rescalefn='linear',
         if min_max==[None,None]:
             min_max=[0., 100.]
 
-        minval, maxval = np.nanpercentile(datin, min_max)
+        if (datin == 0).all():
+            minval, maxval = 0., 0.
+        else:
+            minval, maxval = np.nanpercentile(datin[datin != 0.0], min_max)
 
         if min_vmax is not None:
             # print(f"Found min_vmax: {min_vmax}. maxval is {maxval:.2f}")
@@ -1069,9 +1072,14 @@ def greyRGBize_image(datin,rescalefn='linear',
         #     minval, maxval = np.percentile(np.ma.masked_invalid(datin).compressed(), min_max)
         # except IndexError:
         #     minval, maxval = np.percentile(np.ma.masked_invalid(np.zeros_like(datin)).compressed(), min_max)
-    else:
+    elif 'linear' in scaletype.lower():
         minval=[np.nanmin(datin) if min_max[0] is None else min_max[0]][0]
         maxval=[np.nanmax(datin) if min_max[1] is None else min_max[1]][0]
+    elif "maxent" in scaletype.lower():
+        from max_entropy_stretch import maxent_bounds
+        minval, maxval = maxent_bounds(datin)
+    else:
+        raise ValueError(f"Unknown scaletype: {scaletype}")
 
     # Check for overrides if vmin/vmax are set.
     if vmin is not None:

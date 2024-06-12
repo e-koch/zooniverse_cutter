@@ -17,7 +17,6 @@ from spectral_cube import Projection
 # Slightly modified version of this package
 import multicolorfits as mcf
 
-
 def add_proj_to_dict(data_path, galaxy_name, color_dict):
     '''
     Add a projection to the existing dictionary with the different bands.
@@ -284,6 +283,10 @@ def load_toml(path, job_id=None):
 
 
 if __name__ == "__main__":
+
+    print("Remember to use py311 environment!")
+    print("conda activate py311")
+    print("Run from within zooniverse_cutter directory")
 
     import sys
     from pathlib import Path
