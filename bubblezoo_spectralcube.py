@@ -290,6 +290,8 @@ if __name__ == "__main__":
 
     import sys
     from pathlib import Path
+    import shutil
+    import os
 
     # The job number in the job array is used to select the galaxy.
     job_id = int(sys.argv[-1]) if sys.argv[-1] != "None" else None
@@ -298,6 +300,9 @@ if __name__ == "__main__":
     config_file = Path(sys.argv[-2])
 
     color_tag = config_file.name.split(".")[0].split("_")[-1]
+
+    # cutout_sizes = [0.5, 1]*u.arcmin
+    cutout_sizes = [0.5] * u.arcmin
 
     galaxy_names, data_path, output_path, color_dict = load_toml(config_file, job_id=job_id)
 
@@ -320,6 +325,21 @@ if __name__ == "__main__":
                      filename_tag=color_tag,
                      gal_name=galaxy_name,
                      target_min_finite_frac=0.5,
-                     cutout_sizes=[0.5, 1]*u.arcmin,
+                     cutout_sizes=cutout_sizes,
                      save_bw_cutouts=True)
 
+    # Tar it up
+    if job_id is None:
+        galaxy_str = "set"
+    else:
+        galaxy_str = galaxy_names[0]
+
+    # If running in a cluster environment, include the job id to avoid overwriting the tar file.
+    if "JOB_ID" in os.environ:
+        job_str = os.environ["JOB_ID"]
+    else:
+        job_str = "None"
+
+    tar_file = output_path.parent / f"cutouts_{color_tag}_{galaxy_str}_{job_str}.tar"
+
+    shutil.make_archive(str(tar_file), 'tar', str(output_path))
