@@ -17,4 +17,8 @@ dependencies:
   - astropy
   - lmfit
   - spectral-cube
+  - matplotlib
+  - scikit-image
+  - scipy
+  # - reproject # Need dev version right now
 prefix: /home/erickoch/miniconda3

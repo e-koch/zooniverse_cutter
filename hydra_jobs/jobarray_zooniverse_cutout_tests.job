@@ -11,7 +11,7 @@
 #$ -M eric.koch@cfa.harvard.edu
 
 
-source $HOME/.tcshrc
+# source $HOME/.tcshrc
 
 conda activate bubblezoo
 
