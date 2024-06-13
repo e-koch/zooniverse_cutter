@@ -274,8 +274,26 @@ def make_cutouts(color_dict,
         # Save the plot ranges as a table.
         ranges_filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_ranges.txt"
 
-        ranges_df = pd.DataFrame(plot_range_dict)
-        ranges_df.to_csv(ranges_filename, sep='\t')
+
+        columns = ['minval', 'maxval']
+        data = []
+        all_columns = []
+        for ii, this_key in enumerate(color_dict.keys()):
+            all_columns.append([f"{this_key}_{this_col}" for this_col in columns])
+
+            band_arr = np.array(plot_range_dict[this_key])
+
+            # Only append the first column (iteration number) once
+            if ii == 0:
+                data.append(band_arr[:, 0].astype(int))
+
+            # Min max for the rest
+            data.append(band_arr[:, 1])
+            data.append(band_arr[:, 2])
+
+        ranges_df = pd.DataFrame(data, columns=['iter'] + all_columns)
+        ranges_df.set_index('iter', inplace=True)
+        ranges_df.to_csv(ranges_filename)
 
 def load_toml(path, job_id=None):
     """
