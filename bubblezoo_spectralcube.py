@@ -284,15 +284,17 @@ def make_cutouts(color_dict,
             band_arr = np.array(plot_range_dict[this_key])
 
             # Only append the first column (iteration number) once
-            if ii == 0:
-                data.append(band_arr[:, 0].astype(int))
+            # if ii == 0:
+            #     data.append(band_arr[:, 0].astype(int))
 
             # Min max for the rest
             data.append(band_arr[:, 1])
             data.append(band_arr[:, 2])
 
-        ranges_df = pd.DataFrame(data, columns=['iter'] + all_columns)
-        ranges_df.set_index('iter', inplace=True)
+        # ranges_df = pd.DataFrame(data, index=['iter'] + sum(all_columns, [])).T
+        # ranges_df.set_index('iter', inplace=True)
+
+        ranges_df = pd.DataFrame(data, index=sum(all_columns, [])).T
         ranges_df.to_csv(ranges_filename)
 
 def load_toml(path, job_id=None):
