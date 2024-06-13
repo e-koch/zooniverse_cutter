@@ -272,8 +272,7 @@ def make_cutouts(color_dict,
                 iter += 1
 
         # Save the plot ranges as a table.
-        ranges_filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_ranges.txt"
-
+        ranges_filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_ranges.csv"
 
         columns = ['minval', 'maxval']
         data = []
