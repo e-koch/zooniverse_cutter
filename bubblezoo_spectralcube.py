@@ -12,6 +12,8 @@ from astropy.io import fits
 from astropy import units as u
 from astropy.wcs.utils import proj_plane_pixel_scales
 
+import pandas as pd
+
 from spectral_cube import Projection
 
 # Slightly modified version of this package
@@ -162,6 +164,14 @@ def make_cutouts(color_dict,
         reproj_dict[this_key] = reproj_dict[this_key][mask_slices]
 
 
+    # Also create table with the vmin and vmax used for plotting each cutout.
+    # This will make it easier to identify which cutout numbers have high/low dynamic range
+    plot_range_dict = {}
+    for this_key in color_dict.keys():
+        plot_range_dict[this_key] = []
+
+    # Append to this list: [target_idx, vmin, vmax]
+
     # Make the cutouts, save to png files with 4 different rotations, and a txt file of the header for each cutout
     for cutout_size, zoom_ratio in zip(cutout_sizes, zoom_ratios):
 
@@ -200,10 +210,22 @@ def make_cutouts(color_dict,
                 if finite_frac < target_min_finite_frac:
                     continue
 
-                grey_images = {this_band: mcf.greyRGBize_image(nd.zoom(np.nan_to_num(reproj_dict[this_band][slicer].value),
-                                                                       zoom_ratio, order=3),
-                                                               **color_dict[this_band]['greyRGBize_kwargs'])
-                               for this_band in color_dict.keys()}
+                grey_images = {}
+                for this_band in color_dict.keys():
+
+                    grey_band_image, minval, maxval = \
+                        mcf.greyRGBize_image(nd.zoom(np.nan_to_num(reproj_dict[this_band][slicer].value),
+                                                                zoom_ratio, order=3),
+                                                                **color_dict[this_band]['greyRGBize_kwargs'])
+
+                    grey_images[this_band] = grey_band_image
+
+                    plot_range_dict[this_band].append([iter, minval, maxval])
+
+                # grey_images = {this_band: mcf.greyRGBize_image(nd.zoom(np.nan_to_num(reproj_dict[this_band][slicer].value),
+                #                                                        zoom_ratio, order=3),
+                #                                                **color_dict[this_band]['greyRGBize_kwargs'])
+                #                for this_band in color_dict.keys()}
 
                 colored_images = {this_band: mcf.colorize_image(np.nan_to_num(grey_images[this_band]),
                                                                 color_dict[this_band]['color'],
@@ -249,6 +271,11 @@ def make_cutouts(color_dict,
 
                 iter += 1
 
+        # Save the plot ranges as a table.
+        ranges_filename = output_path / f"{gal_name}_{size_str}_zoom{zoom_ratio:.2f}_ranges.txt"
+
+        ranges_df = pd.DataFrame(plot_range_dict)
+        ranges_df.to_csv(ranges_filename, sep='\t')
 
 def load_toml(path, job_id=None):
     """
@@ -340,6 +367,6 @@ if __name__ == "__main__":
     else:
         job_str = "None"
 
-    tar_file = output_path.parent / f"cutouts_{color_tag}_{galaxy_str}_{job_str}.tar"
+    tar_file = output_path.parent / f"cutouts_{color_tag}_target_{galaxy_str}_jobid_{job_str}"
 
     shutil.make_archive(str(tar_file), 'tar', str(output_path))

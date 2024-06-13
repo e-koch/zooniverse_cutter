@@ -1015,7 +1015,8 @@ def greyRGBize_image(datin,rescalefn='linear',
                      vmin=None, vmax=None,
                      min_vmax=None, max_vmin=None,
                      gamma=2.2,
-                     checkscale=False):
+                     checkscale=False,
+                     return_range=True):
     """
     ### Takes an image and returns 3-frame [R,G,B] (vals from 0...1)
 
@@ -1041,11 +1042,15 @@ def greyRGBize_image(datin,rescalefn='linear',
         Value for gamma correction.  For combining colorized frames, use default gamma=2.2.  For inverse, use gamma=(1./2.2)
     checkscale : bool
         True to bring up plot to check the new image scale.
+    return_range: bool
+        True to return vmin/vmax as a list
 
     Returns
     -------
     array
         Greyscale RGB image, shape=[ypixels,xpixels,3]
+    minval, maxval
+        If return_range=True, returns the min/max values used when scaling the data
     """
 
     if 'per' in scaletype.lower():
@@ -1110,6 +1115,9 @@ def greyRGBize_image(datin,rescalefn='linear',
         plt.imshow(dat_greyRGB**(1./gamma),interpolation='nearest',origin='lower')
         plt.title('Scaled Image')
         plt.show() #plt.clf(); plt.close('all')
+
+    if return_range:
+        return dat_greyRGB, minval, maxval
 
     return dat_greyRGB
 
