@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import copy
 
 import matplotlib.pyplot as plt
 
@@ -18,6 +19,8 @@ from spectral_cube import Projection
 
 # Slightly modified version of this package
 import multicolorfits as mcf
+
+from constrained_diffusion import constrained_diffusion
 
 def add_proj_to_dict(data_path, galaxy_name, color_dict):
     '''
@@ -213,10 +216,23 @@ def make_cutouts(color_dict,
                 grey_images = {}
                 for this_band in color_dict.keys():
 
+                    data = copy.deepcopy(reproj_dict[this_band][slicer].value)
+
+                    if color_dict[this_band]['apply_bkgsub'] is True:
+                        data = data - np.nanpercentile(data,
+                                                       color_dict[this_band]['bgksub_percent'])
+                        data[data < 0] = 0
+
+                    if color_dict[this_band]['apply_cd'] is True:
+                        # Apply constrained diffusion
+                        cd_maps = constrained_diffusion(data,
+                                                        err_rel=3e-2, n_scales=5)[0]
+                        data = np.sum(cd_maps, axis=0)
+
                     grey_band_image, minval, maxval = \
-                        mcf.greyRGBize_image(nd.zoom(np.nan_to_num(reproj_dict[this_band][slicer].value),
-                                                                zoom_ratio, order=3),
-                                                                **color_dict[this_band]['greyRGBize_kwargs'])
+                        mcf.greyRGBize_image(nd.zoom(np.nan_to_num(data),
+                                                     zoom_ratio, order=3),
+                                             **color_dict[this_band]['greyRGBize_kwargs'])
 
                     grey_images[this_band] = grey_band_image
 
