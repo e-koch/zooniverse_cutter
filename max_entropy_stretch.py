@@ -15,6 +15,7 @@ def image_entropy(pars, image):
 def maxent_bounds(image, return_norm=False,
                   raise_error_on_fail=False):
 
+
     min_val = np.nanmin(image)
     max_val = np.nanmax(image)
 

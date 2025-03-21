@@ -22,6 +22,9 @@ import multicolorfits as mcf
 
 from constrained_diffusion import constrained_diffusion
 
+from radial_scaling import radial_scaling
+
+
 def add_proj_to_dict(data_path, galaxy_name, color_dict):
     '''
     Add a projection to the existing dictionary with the different bands.
@@ -70,6 +73,11 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
             this_data = fits.open(all_matches[0])[this_band_hduext].data
             this_mask = np.logical_and(np.isfinite(this_data), this_data != 0)
 
+            # Mask around bright saturated sources.
+            # this_mask = mo.remove_small_holes(this_mask, area_threshold=1)
+            # this_mask = nd.binary_erosion(this_mask, mo.disk(5))
+            # this_mask = nd.binary_closing(this_mask, mo.disk(5))
+
             # But assert the shape is at least the same
             if np.shape(color_dict[this_band]['data']) != np.shape(this_data):
                 raise ValueError(f"Specified mask extension does not have a matching shape to the data: {all_matches[0]}")
@@ -86,6 +94,15 @@ def add_proj_to_dict(data_path, galaxy_name, color_dict):
                                               iterations=edge_clip_size)
 
                 this_mask = nd.binary_erosion(this_mask, iterations=edge_clip_size)
+
+            if color_dict[this_band]['apply_radial_scaling'] is True:
+                print("Applying radial scaling")
+                scaled_data = \
+                    radial_scaling(galaxy_name,
+                                   color_dict[this_band]['data'],
+                                   threshold=color_dict[this_band]['radscale_thresh'])
+
+                color_dict[this_band]['data'] = scaled_data
 
             color_dict[this_band]['mask'] = this_mask
 
@@ -226,8 +243,10 @@ def make_cutouts(color_dict,
                     if color_dict[this_band]['apply_cd'] is True:
                         # Apply constrained diffusion
                         cd_maps = constrained_diffusion(data,
-                                                        err_rel=3e-2, n_scales=5)[0]
-                        data = np.sum(cd_maps, axis=0)
+                                                        err_rel=3e-2,
+                                                        n_scales=5)[0]
+                        # Exclude smallest scale. Tends to be noise dominated.
+                        data = np.sum(cd_maps[1:], axis=0)
 
                     grey_band_image, minval, maxval = \
                         mcf.greyRGBize_image(nd.zoom(np.nan_to_num(data),

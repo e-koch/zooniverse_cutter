@@ -13,7 +13,9 @@ bands = [
 ]
 
 targets = [
-    'ngc0628'
+    # 'ic5332',
+    # 'ngc0628',
+    'ngc1365'
 ]
 
 
@@ -25,6 +27,11 @@ file_search_str = '_F770W_starsub_anchored.fits'
 hdu_ext = 0
 apply_cd = false
 apply_bkgsub = false
+apply_radial_scaling = true
+
+# Scale the galaxy center down if its radial profile exceeds this value.
+# This is in whatever units this band is in.
+radscale_thresh = 100
 
 # 'yellow'
 color = '#FFFF00'
@@ -44,6 +51,10 @@ file_search_str = '_F770W_starsub_anchored.fits'
 hdu_ext = 0
 apply_cd = true
 apply_bkgsub = false
+apply_radial_scaling = true
+
+# Scale the galaxy center down if its radial profile exceeds this value.
+radscale_thresh = 100
 
 # 'red ish'
 color = '#FF0000'
@@ -67,6 +78,7 @@ edge_clip_match = 'wfc3'  # instrument check. Only clip edges for wfc3
 
 apply_cd = false
 apply_bkgsub = true
+apply_radial_scaling = false
 
 bgksub_percent = 5.0
 
