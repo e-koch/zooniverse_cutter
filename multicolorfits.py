@@ -1083,6 +1083,12 @@ def greyRGBize_image(datin,rescalefn='linear',
     elif "maxent" in scaletype.lower():
         from max_entropy_stretch import maxent_bounds
         minval, maxval = maxent_bounds(datin)
+
+        # Adjust max if too much will be saturated in the image.
+        while nanpercofscore(datin, maxval, kind='weak') < 80.0:
+            print("Warning: maxval is too low.  Adjusting.")
+            maxval *= 2.
+
     else:
         raise ValueError(f"Unknown scaletype: {scaletype}")
 
