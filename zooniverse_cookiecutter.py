@@ -97,8 +97,11 @@ def get_perc_nan(image):
     return perc
 
 
-def zooniverse_cutout_filename_generator(center_ra_dec, boxsize_arcmin, band=None):
-    """The filename string template used when saving data, and outputs that
+def zooniverse_cutout_filename_generator(center_ra_dec,
+                                         boxsize_arcmin,
+                                         band=None):
+    """
+    The filename string template used when saving data, and outputs that
     contain a centre, size and additional string information in band
 
 
@@ -377,44 +380,6 @@ def where_highest_res_list(hdus):
     highest_res_pos = np.nanargmin(res, axis=1)
     return highest_res_pos
 
-def check_projection(hdu1, hdu2):
-    """Function not used in the end because when two images are the
-    same, their reprojection is basically instant so it is not worth
-    working this function in. Just in case we do want to use it,
-    left it in.
-
-    Checks if two headers are identical so that future functions
-    can choose not to reproject.
-
-    Parameters
-    ----------
-    hdu1 : astropy.io.fits.hdu.image.PrimaryHDU
-        Hdu object to compare.
-    hdu2 : astropy.io.fits.hdu.image.PrimaryHDU
-        Second hdu object to compare
-
-    Returns
-    -------
-    the_same: bool
-        True if the two hdu are identical, otherwise False
-
-    """
-    header1 = hdu1.header
-    header2 = hdu2.header
-
-    naxis1 = header1['NAXIS1'] == header2['NAXIS1']
-    naxis2 = header1['NAXIS2'] == header2['NAXIS2']
-
-    cdelt2 = get_pixelsize_hdu(hdu1) == get_pixelsize_hdu(hdu2)
-    crpix1 = header1['CRPIX1'] == header2['CRPIX1']
-    crpix2 = header1['CRPIX2'] == header2['CRPIX2']
-
-    crval1 = header1['CRVAL1'] == header2['CRVAL1']
-    crval2 = header1['CRVAL2'] == header2['CRVAL2']
-
-    the_same = all([naxis1, naxis2, cdelt2, crpix1, crpix2, crval1, crval2])
-
-    return the_same
 
 def make_header_3d(header, third_axis_length=3):
     """Makes a 2d header 3d.
@@ -2139,7 +2104,9 @@ class FitsCutter(object):
         """
         self._save_rgb(path, bands, np.save, colored_cutouts_rgb_arrays, filename_method, **kwargs)
 
-    def save_colored_cutout_as_imagefile(self, path, bands, colored_cutouts_rgb_arrays=None, filename_method=zooniverse_cutout_filename_generator, format='png', **kwargs):
+    def save_colored_cutout_as_imagefile(self, path, bands, colored_cutouts_rgb_arrays=None,
+                                         filename_method=zooniverse_cutout_filename_generator,
+                                         format='png', **kwargs):
         """Saves the final combined false color images as an image, such as
         a png. If no cubes are given, code assumes it has been run and
         saves the last.
@@ -2174,7 +2141,10 @@ class FitsCutter(object):
         format = kwargs.pop('format', format)
         origin = kwargs.pop('origin', 'lower')
 
-        self._save_rgb(path=path, bands=bands, save_method=save_image, colored_cutouts_rgb_arrays=colored_cutouts_rgb_arrays, filename_method=filename_method, format=format, origin=origin, **kwargs)
+        self._save_rgb(path=path, bands=bands, save_method=save_image,
+                       colored_cutouts_rgb_arrays=colored_cutouts_rgb_arrays,
+                       filename_method=filename_method, format=format, origin=origin,
+                       **kwargs)
 
     def _save_rgb(self, path, bands, save_method, colored_cutouts_rgb_arrays=None, filename_method=zooniverse_cutout_filename_generator, **kwargs):
 
@@ -2189,7 +2159,8 @@ class FitsCutter(object):
         for i in range(len(bands)):
             band += '_' + bands[i]
         band = 'rgb_array' + band
-        self.prime_cuts._save(save_method, colored_cutouts_rgb_arrays, None, path, band=band, filename_method=filename_method, **kwargs)
+        self.prime_cuts._save(save_method, colored_cutouts_rgb_arrays, None, path, band=band,
+                              filename_method=filename_method, **kwargs)
 
     def save_reprojected_cutout_as_fitscube(self, path, bands, filename_method=zooniverse_cutout_filename_generator):
         """Saves the reprojected data as a cube so that after running once
@@ -2264,9 +2235,3 @@ class FitsCutter(object):
 
     def save_as_ds9regions(self, path):
         self.prime_cuts.save_as_ds9regions(path)
-
-if __name__ == "__main__":
-    pass
-
-
-

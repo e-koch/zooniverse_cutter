@@ -9,3 +9,5 @@ git clone https://github.com/astropy/reproject.git
 cd python-reprojection
 pip install -e .
 
+# Install the dev version of spectral-cube, too?
+
